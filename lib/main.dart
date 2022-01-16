@@ -5,7 +5,6 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:fyfypay/pages/create_wallet.dart';
 import 'package:fyfypay/pages/import_wallet.dart';
 import 'package:fyfypay/pages/manage_accounts.dart';
-import 'package:fyfypay/pages/new_wallet.dart';
 import 'package:fyfypay/pages/pages.dart';
 import 'package:fyfypay/pages/passphrase.dart';
 import 'package:fyfypay/pages/password.dart';
@@ -71,7 +70,6 @@ class App extends StatelessWidget {
           '/Send': (context) => SendWidget(store: this.store),
           '/Pay': (context) => PayWidget(store: this.store),
           '/watch_address': (context) => WatchAddress(store: this.store),
-          '/new_wallet': (context) => NewWallet(store: this.store),
           '/create_wallet': (context) => CreateWallet(store: this.store),
           '/import_wallet': (context) => ImportWallet(store: this.store),
           // '/manage_accounts': (context) =>

@@ -21,11 +21,6 @@ import 'package:solana/src/dto/parsed_spl_token_account_data.dart';
 import 'package:solana/src/dto/parsed_spl_token_account_data_info.dart';
 import 'package:solana/src/spl_token/token_amount.dart';
 
-import 'package:solana/src/crypto/ed25519_hd_keypair.dart';
-import 'package:cryptography/cryptography.dart'
-    show Ed25519, KeyPair, KeyPairType, SimpleKeyPairData, SimplePublicKey;
-import 'package:ed25519_hd_key/ed25519_hd_key.dart';
-
 abstract class Account {
   final AccountType accountType;
   late String name;
@@ -68,11 +63,9 @@ class BaseAccount {
   final AccountType accountType = AccountType.Wallet;
   final String url;
   late String name;
-  late String accountName;
 
   late RPCClient client;
   late String address;
-  late String privateKey;
 
   late double balance = 0;
   late double usdtBalance = 0;
@@ -195,11 +188,10 @@ class WalletAccount extends BaseAccount implements Account {
   late Wallet wallet;
   final String mnemonic;
 
-  WalletAccount(double balanceValue, name, accountName, url, this.mnemonic)
+  WalletAccount(double balanceValue, name, url, this.mnemonic)
       : super(balanceValue, name, url) {
     client = RPCClient(url);
     this.name = name;
-    this.accountName = accountName;
   }
 
   /*
@@ -216,8 +208,6 @@ class WalletAccount extends BaseAccount implements Account {
    * Create the keys pair in Isolate to prevent blocking the main thread
    */
   static Future<Ed25519HDKeyPair> createKeyPair(String mnemonic) async {
-    print("dddddddddddd");
-    print(mnemonic);
     final Ed25519HDKeyPair keyPair =
     await Ed25519HDKeyPair.fromMnemonic(mnemonic);
     return keyPair;
@@ -226,27 +216,17 @@ class WalletAccount extends BaseAccount implements Account {
   /*
    * Load the keys pair into the WalletAccount
    */
-  Future<void> importKeyPair(String mnemonic) async {
-    final Ed25519HDKeyPair keyPair =
-    await Executor().execute(arg1: mnemonic, fun1: createKeyPair);
-
-    var simplePublicKey = keyPair.extract() ;
-    simplePublicKey.then((value) {
-      value.extractPrivateKeyBytes().then((template) => {
-        print(template)
-      });
-
-    });
-
-  }
   Future<void> loadKeyPair() async {
     final Ed25519HDKeyPair keyPair =
     await Executor().execute(arg1: this.mnemonic, fun1: createKeyPair);
+
     // await Executor().execute(arg1: name, fun1: createKeyPair);
     final Wallet wallet = new Wallet(signer: keyPair, rpcClient: client);
     this.wallet = wallet;
     this.address = wallet.address;
-    this.privateKey = wallet.signer.address;
+    print("wallet address:  ");
+    print(wallet.address);
+
     RPCClient clientTemp = RPCClient(url);
     int balance = await clientTemp.getBalance(this.address);
     double solBalance = balance.toDouble() / 1000000000;
@@ -281,25 +261,14 @@ class WalletAccount extends BaseAccount implements Account {
    * Create a new WalletAccount with a random mnemonic
    */
   static Future<WalletAccount> generate(String my_mnemonic, String url, name) async {
-    final String randomMnemonic = bip39.generateMnemonic(strength: 256);
+    final String randomMnemonic = bip39.generateMnemonic();
 
-    WalletAccount account = new WalletAccount( 0, name, name, url, my_mnemonic);
+    WalletAccount account = new WalletAccount( 0, name, url, my_mnemonic);
     await account.loadKeyPair();
 
     // await account.refreshBalance();
     return account;
   }
-
-  static Future<WalletAccount> generateNewWallet( String url, name, accountName) async {
-    final String randomMnemonic = bip39.generateMnemonic(strength: 256);
-
-    WalletAccount account = new WalletAccount( 0, name, accountName, url, randomMnemonic);
-    await account.loadKeyPair();
-
-    // await account.refreshBalance();
-    return account;
-  }
-
 
   Map<String, dynamic> toJson() {
     return {
@@ -448,8 +417,8 @@ class AppState {
     accounts[account.name] = account;
   }
 
-  Future<bool> sendUSDCToken(String address, double amount, int selectedWalletIndex) async {
-    bool returnValue = false;
+  Future<String> sendUSDCToken(String address, double amount, int selectedWalletIndex) async {
+    var returnValue ;
     WalletAccount walletAccount   ;
     walletAccount = accounts.values.elementAt(selectedWalletIndex);
     Wallet wallet = walletAccount.wallet;
@@ -461,21 +430,22 @@ class AppState {
 
     try {
       // this is usdc transfer
-      await wallet.transferSplToken(
+      var response = await wallet.transferSplToken(
         mint: mintValue,
         destination: address,
         amount: lamports,
         commitment: commitment,
       );
+
       // this is sol transfer
       // wallet.transfer(
       //   destination: address,
       //   lamports: lamports,
       // );
-      returnValue = true;
+      returnValue = response;
     } catch (e) {
       print(e);
-      returnValue = false;
+      returnValue = "";
     }
     return returnValue;
   }
@@ -489,7 +459,6 @@ class StateWrapper extends Store<AppState> {
       : super(reducer, initialState: initialState, middleware: middleware);
 
   Future<void> refreshAccounts() async {
-
     for (var accountEntry in state.accounts.entries.toList()) {
       WalletAccount account = accountEntry.value;
       if (account != null) {
@@ -497,7 +466,6 @@ class StateWrapper extends Store<AppState> {
         // await account.loadTransactions();
         // Refresh the account balance
         await account.refreshUSDCBalance();
-        account.importKeyPair(account.mnemonic);
       }
     }
 
@@ -535,26 +503,6 @@ class StateWrapper extends Store<AppState> {
     // await state.loadSolValue();
 
     dispatch({"type": StateActions.SolValueRefreshed});
-  }
-
-  Future<WalletAccount> createNewWallet(String accountName) async {
-    // state.accounts.clear();
-    // ClientAccount account = new ClientAccount(address, 0,
-    //     state.generateAccountName(), "https://api.mainnet-beta.solana.com");
-    //
-    // ClientAccount account = new ClientAccount(address, 0,
-    //     state.generateAccountName(), "https://api.testnet.solana.com");
-
-    var currentAccountLength = state.accounts.length;
-    var nameValue = "Account " + currentAccountLength.toString();
-    WalletAccount walletAccount =
-    await WalletAccount.generateNewWallet( "https://api.testnet.solana.com", nameValue, accountName);
-
-    // Add the account
-    state.addAccount(walletAccount);
-
-    dispatch({"type": StateActions.SolValueRefreshed});
-    return walletAccount;
   }
 
   Future<void> refreshAccount(String accountName) async {

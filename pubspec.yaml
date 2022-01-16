@@ -1,5 +1,5 @@
-name: Fyfy Mobile Wallet
-description: A Fyfy Mobile Wallet
+name: fyfypay
+description: A solana mobile wallet
 
 publish_to: 'none'
 
@@ -11,7 +11,6 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   shared_preferences: ^2.0.6
-  fluttertoast: ^8.0.7
   passcode_screen: ^2.0.0
   solana: 
     git: 
@@ -71,6 +70,29 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+  fonts:
+    - family: Titillium Web
+      fonts:
+        - asset: assets/fonts/TitilliumWeb-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/TitilliumWeb-ExtraLightItalic.ttf
+          weight: 200
+        - asset: assets/fonts/TitilliumWeb-Light.ttf
+          weight: 300
+        - asset: assets/fonts/TitilliumWeb-LightItalic.ttf
+          weight: 300
+        - asset: assets/fonts/TitilliumWeb-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/TitilliumWeb-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/TitilliumWeb-SemiBoldItalic.ttf
+          weight: 600
+        - asset: assets/fonts/TitilliumWeb-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/TitilliumWeb-BoldItalic.ttf
+          weight: 700
+        - asset: assets/fonts/TitilliumWeb-Black.ttf
+          weight: 900
   # fonts:
   #   - family: Schyler
   #     fonts:
