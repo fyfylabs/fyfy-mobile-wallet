@@ -1,10 +1,8 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:fyfypay/components/network_selector.dart';
 import 'package:fyfypay/pages/pages.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +11,6 @@ import 'package:tuple/tuple.dart';
 import '../state/store.dart';
 import '../utiles/app_config.dart' as config;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:http/http.dart' as http;
 
 
 /*
@@ -33,8 +30,6 @@ class PayState extends State<PayWidget> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   StateWrapper store;
   late String address;
-  late String callBackURL;
-  late String orderId;
   late String networkURL;
   QRViewController? qrController;
   Barcode? result;
@@ -62,8 +57,7 @@ class PayState extends State<PayWidget> {
         key: scaffoldKey,
         body: Stack(
           children: [
-            isLoading? progress
-            :Padding(
+            Padding(
                 padding:EdgeInsets.only(top: config.App(context).appWidth(10)),
                 child: scanStarted ? qrScanView()
                     : Padding(
@@ -282,7 +276,7 @@ class PayState extends State<PayWidget> {
                     },
                     child: Image.asset('assets/img/icon_arrow_backward.png'),
                   ),
-                  Text("Pay".toUpperCase()  , style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w600)),
+                  Text("Pay".toUpperCase()  , style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600)),
                   SizedBox(width: 10,)
                 ],
               ),
@@ -322,22 +316,22 @@ class PayState extends State<PayWidget> {
                   child: Text("Scan QR-Code", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
                 )
             ),
-            // Align(
-            //     alignment: Alignment.bottomCenter,
-            //     child: GestureDetector(
-            //       onTap: () {
-            //         setState(() {
-            //           scanStarted = false;
-            //         });
-            //       },
-            //       child: Container(
-            //         width: config.App(context).appWidth(60),
-            //         margin: EdgeInsets.only(bottom: 100),
-            //         child: Text("[Auto transaction to next when scanned, click here see]",
-            //             textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 18)),
-            //       ),
-            //     )
-            // )
+            Align(
+                alignment: Alignment.bottomCenter,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      scanStarted = false;
+                    });
+                  },
+                  child: Container(
+                    width: config.App(context).appWidth(60),
+                    margin: EdgeInsets.only(bottom: 100),
+                    child: Text("[Auto transaction to next when scanned, click here see]",
+                        textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 18)),
+                  ),
+                )
+            )
           ],
         )
     );
@@ -359,23 +353,16 @@ class PayState extends State<PayWidget> {
       setState(() {
         result = scanData;
         String resultTemp = scanData.code.toString();
-        print("wwwwwwwww");
-        print(resultTemp);
         var parts = resultTemp.split(':');
         parts[0].trim();
         var body = parts.sublist(1).join(':').trim();
         var secondPart = body.split('?');
-        var callBackPart = secondPart.sublist(2)[0];
-        var callBackURLValue = "https:" + callBackPart.split(':').sublist(2)[0] ;
-        var orderIDValue = secondPart.sublist(3)[0].split('=');
-        orderId = orderIDValue.sublist(1)[0].toString();
-        print(orderId);
-        print(callBackURLValue);
-        callBackURL = callBackURLValue;
+        var thirdPart = body.split(':');
+        secondPart[1].trim();
+        print(thirdPart.sublist(1)[0]);
         barcodeResult = secondPart.sublist(0)[0].toString();
         address = barcodeResult;
-        var amountPart = secondPart.sublist(1)[0].split(':');
-        amountValue = double.parse(amountPart.sublist(1)[0]);
+        amountValue = double.parse(thirdPart.sublist(1)[0])/100;
         scanStarted = false;
       });
     });
@@ -384,45 +371,50 @@ class PayState extends State<PayWidget> {
   void sendUSDC() {
     var commentValue = commentController.text.trim();
     if(commentValue == "") {
-
-      scaffoldKey.currentState!.showSnackBar(new SnackBar(
-          content: new Text("Input the comment text.")
-      ));
+      Fluttertoast.showToast(
+          msg: "Input the comment text.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
     } else {
       setState(() {
         isLoading = true;
       });
-      store.state.sendUSDCToken(address,amountValue,  selectedWalletIndex).then((value)  async {
-        if(value != "" ) {
-          scaffoldKey.currentState!.showSnackBar(new SnackBar(
-          content: new Text("Sent Successfully")
-          ));
-          var final_url = callBackURL;
-          final String url = final_url;
-          final client = new http.Client();
-          final response = await client.post(
-            Uri.parse(url),
-            headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-            body: json.encode({"order_id": orderId, "signature" : value}),
-          );
-         print(response.statusCode);
-         print(response.body);
+      store.state.sendUSDCToken(address,amountValue,  selectedWalletIndex).then((value) => {
+        if(value) {
+          Fluttertoast.showToast(
+              msg: "Sent Successfully",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.green,
+              textColor: Colors.white,
+              fontSize: 16.0
+          ),
           setState(() {
             scanStarted = false;
             isLoading = false;
             address = "";
-            callBackURL = "";
             commentValue = "";
-          });
-
+          })
         } else {
-          scaffoldKey.currentState!.showSnackBar(new SnackBar(
-              content: new Text("Send failed")
-          ));
-        };
+          Fluttertoast.showToast(
+              msg: "Send failed",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0
+          )
+        },
         setState(() {
           isLoading = false;
-        });
+        })
       });
     }
 

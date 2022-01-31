@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:fyfypay/components/network_selector.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tuple/tuple.dart';
@@ -59,30 +60,29 @@ class WatchAddressState extends State<WatchAddress> {
         key: scaffoldKey,
         body: Stack(
           children: [
-
             isLoading? progress
             :  Padding(
                 padding: EdgeInsets.only(top: config.App(context).appWidth(33)),
                 child: Column(
                   children: [
                     Text("Balance", style: TextStyle(color: Color(0xff00264E), fontSize: 24, fontWeight: FontWeight.w600)),
-                    // SizedBox(
-                    //   width: config.App(context).appWidth(100),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.center,
-                    //     children: [
-                    //       Text(
-                    //         solBalance.toString(),
-                    //         style: GoogleFonts.poppins(
-                    //           textStyle: TextStyle(
-                    //               fontSize: 50, color: Color(0xff00264E)
-                    //           ),
-                    //         ),
-                    //       ),
-                    //       Text(' SOL')
-                    //     ],
-                    //   ),
-                    // ),
+                    SizedBox(
+                      width: config.App(context).appWidth(100),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            solBalance.toString(),
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                  fontSize: 50, color: Color(0xff00264E)
+                              ),
+                            ),
+                          ),
+                          Text(' SOL')
+                        ],
+                      ),
+                    ),
                     SizedBox(
                       width: config.App(context).appWidth(100),
                       child:  Row(
@@ -288,7 +288,7 @@ class WatchAddressState extends State<WatchAddress> {
                                           //   ),
                                           // ),
 
-                                          SizedBox(height: 100),
+                                          SizedBox(height: 50),
                                           GestureDetector(
                                             onTap: () => {
                                               addAccount()
@@ -296,7 +296,6 @@ class WatchAddressState extends State<WatchAddress> {
                                             child:  Container(
                                                 width: config.App(context).appWidth(70),
                                                 height: config.App(context).appWidth(13),
-                                                margin: EdgeInsets.only(bottom: config.App(context).appWidth(10)),
                                                 decoration: BoxDecoration(
                                                     borderRadius: BorderRadius.circular(8),
                                                     border: Border.all(
@@ -315,61 +314,88 @@ class WatchAddressState extends State<WatchAddress> {
                                                 )
                                             ),
                                           ),
+                                          SizedBox(height: 10),
+                                          GestureDetector(
+                                            onTap: () => {
+                                              Navigator.of(context).pushNamed('/new_wallet')
+                                            },
+                                            child:  Container(
+                                                width: config.App(context).appWidth(70),
+                                                height: config.App(context).appWidth(13),
+                                                decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    border: Border.all(
+                                                        width: 2, color: Color(0xff081B2A)
+                                                    )
+                                                ),
+                                                child:  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children :[
+                                                      Icon(Icons.add, size: 20,),
+                                                      SizedBox(width: 5,),
+                                                      Text(
+                                                        "create new wallet", style: TextStyle(color: Color(0xff081B2A), fontSize: 18, fontWeight: FontWeight.w600),
+                                                      ),
+                                                    ]
+                                                )
+                                            ),
+                                          ),
 
                                         ],
                                       )),
-                                )
+                                ),
+                                Container(
+                                  width: config.App(context).appWidth(70),
+                                  margin: EdgeInsets.symmetric(horizontal: config.App(context).appWidth(15)),
+                                  child: GridView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: store.state.accounts.length,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10),
+                                    itemBuilder: (BuildContext context, int index) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState((){
+                                            solBalance = store.state.accounts["Account " + index.toString()]!.balance;
+                                            usdcBalance = store.state.accounts["Account " + index.toString()]!.usdcBalance;
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(horizontal: 10),
+                                          decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(5),
+                                              border: Border.all(
+                                                  width: 2, color: Color(0xff081B2A)
+                                              )
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                                                decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: Colors.grey.withOpacity(0.7)
+                                                ),
+                                                child: Text(
+                                                  "A"+ index.toString(), style: TextStyle(color: Color(0xff081B2A), fontSize: 12, fontWeight: FontWeight.w400),
+                                                ),
+                                              ),
+                                              SizedBox(height: 5),
+                                              Text(
+                                                store.state.accounts["Account "+ index.toString()]!.accountName, style: TextStyle(color: Color(0xff081B2A), fontSize: 14, fontWeight: FontWeight.w600),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                               ],
                             ),
-                            Container(
-                              width: config.App(context).appWidth(70),
-                              margin: EdgeInsets.symmetric(horizontal: config.App(context).appWidth(15)),
-                              child: GridView.builder(
-                                shrinkWrap: true,
-                                itemCount: store.state.accounts.length,
-                                physics: NeverScrollableScrollPhysics(),
-                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10),
-                                itemBuilder: (BuildContext context, int index) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState((){
-                                        solBalance = store.state.accounts["Account " + index.toString()]!.balance;
-                                        usdcBalance = store.state.accounts["Account " + index.toString()]!.usdcBalance;
-                                      });
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 10),
-                                      decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(5),
-                                          border: Border.all(
-                                              width: 2, color: Color(0xff081B2A)
-                                          )
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                                            decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: Colors.grey.withOpacity(0.7)
-                                            ),
-                                            child: Text(
-                                              "A"+ index.toString(), style: TextStyle(color: Color(0xff081B2A), fontSize: 12, fontWeight: FontWeight.w400),
-                                            ),
-                                          ),
-                                          SizedBox(height: 5),
-                                          Text(
-                                            store.state.accounts["Account "+ index.toString()]!.name, style: TextStyle(color: Color(0xff081B2A), fontSize: 14, fontWeight: FontWeight.w600),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
+
 
 
                           ],
@@ -378,15 +404,7 @@ class WatchAddressState extends State<WatchAddress> {
                   ],
                 )
             ),
-            Padding(
-              padding: EdgeInsets.only(top: config.App(context).appHeight(60),left: config.App(context).appWidth(15), right: config.App(context).appWidth(15)),
-              child:  SizedBox(
-                width: config.App(context).appWidth(70),
-                // child :
-              )
-            ),
-            isLoading? progress
-            : Container(
+            Container(
               width: config.App(context).appWidth(100),
               height: config.App(context).appHeight(15),
               padding: EdgeInsets.symmetric(horizontal: 10),
@@ -466,6 +484,9 @@ class WatchAddressState extends State<WatchAddress> {
           isLoading = false;
           solBalance = store.state.accounts["Account 0"]!.balance;
           usdcBalance = store.state.accounts["Account 0"]!.usdcBalance;
+          print(store.state.accounts["Account 0"]!.address);
+          print(store.state.accounts["Account 0"]!.accountName);
+          print(store.state.accounts["Account 0"]!.mnemonic);
         });
       });
     }
@@ -474,19 +495,30 @@ class WatchAddressState extends State<WatchAddress> {
   void addAccount() async {
     // Create the account
     if(mnemonicController.text.toString().length == 0) {
-      scaffoldKey.currentState!.showSnackBar(new SnackBar(
-          content: new Text("Input the Mnemonic.")
-      ));
+      Fluttertoast.showToast(
+          msg: "Input the Mnemonic.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
     } else {
       setState(() {
         isLoading = true;
       });
       store.createWatcher(mnemonicController.text.toString()).then((_) {
         mnemonicController.text = "";
-        scaffoldKey.currentState!.showSnackBar(new SnackBar(
-            content: new Text("New Wallet Added")
-        ));
-
+        Fluttertoast.showToast(
+            msg: "New Wallet Added.",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0
+        );
         setState(() {
           isLoading = false;
         });
@@ -520,5 +552,7 @@ class WatchAddressState extends State<WatchAddress> {
       });
     });
   }
+
+
 
 }

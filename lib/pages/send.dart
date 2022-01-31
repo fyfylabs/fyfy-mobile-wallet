@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:fyfypay/components/network_selector.dart';
 import 'package:fyfypay/pages/pages.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -30,7 +31,6 @@ class SendState extends State<SendWidget> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   StateWrapper store;
   late String address;
-  late String callBackURL;
   late String networkURL;
   QRViewController? qrController;
   Barcode? result;
@@ -126,14 +126,26 @@ class SendState extends State<SendWidget> {
                                   isSetAmount = true;
                                 });
                               } else {
-                                scaffoldKey.currentState!.showSnackBar(new SnackBar(
-                                    content: new Text("Amount should be bigger than 0.")
-                                ));
+                                Fluttertoast.showToast(
+                                    msg: "Amount should be bigger than 0.",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.red,
+                                    textColor: Colors.white,
+                                    fontSize: 16.0
+                                );
                               }
                             } else {
-                              scaffoldKey.currentState!.showSnackBar(new SnackBar(
-                                  content: new Text("Insert the Amount.")
-                              ));
+                              Fluttertoast.showToast(
+                                  msg: "Insert the Amount.",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white,
+                                  fontSize: 16.0
+                              );
                             }
                           },
                           child: Container(
@@ -341,9 +353,15 @@ class SendState extends State<SendWidget> {
                       GestureDetector(
                         onTap: () {
                           if(address == "") {
-                            scaffoldKey.currentState!.showSnackBar(new SnackBar(
-                                content: new Text("Input the target address.")
-                            ));
+                            Fluttertoast.showToast(
+                                msg: "Input the target address.",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0
+                            );
                           } else {
                             setState(() {
                               isSendConfirmation = true;
@@ -588,22 +606,22 @@ class SendState extends State<SendWidget> {
                   child: Text("Scan QR-Code", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
                 )
             ),
-            // Align(
-            //     alignment: Alignment.bottomCenter,
-            //     child: GestureDetector(
-            //       onTap: () {
-            //         setState(() {
-            //           scanStarted = false;
-            //         });
-            //       },
-            //       child: Container(
-            //         width: config.App(context).appWidth(60),
-            //         margin: EdgeInsets.only(bottom: 100),
-            //         child: Text("[Auto transaction to next when scanned, click here see]",
-            //             textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 18)),
-            //       ),
-            //     )
-            // )
+            Align(
+                alignment: Alignment.bottomCenter,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      scanStarted = false;
+                    });
+                  },
+                  child: Container(
+                    width: config.App(context).appWidth(60),
+                    margin: EdgeInsets.only(bottom: 100),
+                    child: Text("[Auto transaction to next when scanned, click here see]",
+                        textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 18)),
+                  ),
+                )
+            )
           ],
         )
     );
@@ -636,20 +654,16 @@ class SendState extends State<SendWidget> {
     this.qrController = controller;
     controller.scannedDataStream.listen((scanData) {
       setState(() {
-        result = scanData;
         String resultTemp = scanData.code.toString();
-        print("wwwwwwwww");
+        result = scanData;
         print(resultTemp);
         var parts = resultTemp.split(':');
         parts[0].trim();
         var body = parts.sublist(1).join(':').trim();
         var secondPart = body.split('?');
-        var callBackPart = secondPart.sublist(2)[0];
-        var callBackURLValue = "https:" + callBackPart.split(':').sublist(2)[0] + "?"+secondPart.sublist(3)[0];
-        callBackURL = callBackURLValue;
+        secondPart[1].trim();
         barcodeResult = secondPart.sublist(0)[0].toString();
         address = barcodeResult;
-        var amountPart = secondPart.sublist(1)[0].split(':');
         scanStarted = false;
       });
     });
@@ -659,19 +673,30 @@ class SendState extends State<SendWidget> {
     var amount = double.parse(text);
     var commentValue = commentController.text.trim();
     if(commentValue == "") {
-      scaffoldKey.currentState!.showSnackBar(new SnackBar(
-          content: new Text("Input the comment text.")
-      ));
+      Fluttertoast.showToast(
+          msg: "Input the comment text.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
     } else {
       setState(() {
         isLoading = true;
       });
       store.state.sendUSDCToken(address,amount,  selectedWalletIndex).then((value) => {
-        if(value != "") {
-          scaffoldKey.currentState!.showSnackBar(new SnackBar(
-            content: new Text("Sent Successfully")
-          )),
-
+        if(value) {
+          Fluttertoast.showToast(
+            msg: "Sent Successfully",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0
+          ),
           setState(() {
             isSetAmount = false;
             scanStarted = false;
@@ -682,9 +707,15 @@ class SendState extends State<SendWidget> {
             text = "";
           })
         } else {
-          scaffoldKey.currentState!.showSnackBar(new SnackBar(
-              content: new Text("Send failed")
-          )),
+          Fluttertoast.showToast(
+              msg: "Send failed",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0
+          )
         },
         setState(() {
           isLoading = false;

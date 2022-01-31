@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:fyfypay/components/network_selector.dart';
 import 'package:fyfypay/pages/pages.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,7 +25,7 @@ class PinCodeWidget extends StatefulWidget {
 }
 
 class PinCodeeState extends State<PinCodeWidget> {
-  GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+
   TextEditingController newPinCode = new TextEditingController();
   TextEditingController repeatPinCode = new TextEditingController();
   GlobalKey<FormState> pinCodeForm  = new GlobalKey<FormState>();
@@ -206,15 +207,26 @@ class PinCodeeState extends State<PinCodeWidget> {
       if(newPin == repeatPin) {
         print(newPin);
         prefs.setString("pincode", newPin);
-        scaffoldKey.currentState!.showSnackBar(new SnackBar(
-            content: new Text("Pin code saved.")
-        ));
-
+        Fluttertoast.showToast(
+            msg: "Pin code saved.",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0
+        );
         Navigator.of(context).pop();
       } else {
-        scaffoldKey.currentState!.showSnackBar(new SnackBar(
-            content: new Text("Incorrect pin code")
-        ));
+        Fluttertoast.showToast(
+            msg: "Incorrect pin code",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0
+        );
       }
     }
   }

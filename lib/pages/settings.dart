@@ -78,7 +78,7 @@ class SettingsState extends State<SettingsWidget> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      "Application login method".toUpperCase(), style: TextStyle(color: Color(0xff00264E), fontSize: 24, fontWeight: FontWeight.w600),
+                      "Application login method".toUpperCase(), style: TextStyle(color: Color(0xff00264E), fontSize: 22, fontWeight: FontWeight.w600),
                     ),
                     SizedBox(height: 30,),
                     GestureDetector(
@@ -124,7 +124,7 @@ class SettingsState extends State<SettingsWidget> {
                                   ),
                                   SizedBox(width: 10,),
                                   Text(
-                                    "Pin code", style: TextStyle(color: Color(0xff00264E), fontSize: 20, fontWeight: FontWeight.w400),
+                                    "Pin code", style: TextStyle(color: Color(0xff00264E), fontSize: 18, fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
@@ -177,7 +177,7 @@ class SettingsState extends State<SettingsWidget> {
                                   ),
                                   SizedBox(width: 10,),
                                   Text(
-                                    "Password", style: TextStyle(color: Color(0xff00264E), fontSize: 20, fontWeight: FontWeight.w400),
+                                    "Password", style: TextStyle(color: Color(0xff00264E), fontSize: 18, fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
@@ -230,7 +230,7 @@ class SettingsState extends State<SettingsWidget> {
                                   ),
                                   SizedBox(width: 10,),
                                   Text(
-                                    "Passphrase", style: TextStyle(color: Color(0xff00264E), fontSize: 20, fontWeight: FontWeight.w400),
+                                    "Passphrase", style: TextStyle(color: Color(0xff00264E), fontSize: 18, fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
@@ -245,7 +245,7 @@ class SettingsState extends State<SettingsWidget> {
                       width:config.App(context).appWidth(70),
                       child: Text(
                         "We do not store pin codes, passwords or passphrase on your behalf. Forgotten codes can only be reseted by using other login method",
-                        textAlign:TextAlign.center, style: TextStyle(color: Color(0xff00264E), fontSize: 16, fontWeight: FontWeight.w400),
+                        textAlign:TextAlign.center, style: TextStyle(color: Color(0xff00264E), fontSize: 17, fontWeight: FontWeight.w400),
                       ),
                     )
                   ],
