@@ -49,7 +49,7 @@ class MainState extends State<MainHomeWidget> {
               alignment: Alignment.center,
               child: Padding(
                 padding: EdgeInsets.only(bottom: 100),
-                child: Image.asset('assets/img/fyfy_pay_logo.png'),
+                child: Image.asset('assets/img/fyfy_pay_logo.png', width: config.App(context).appWidth(60), fit: BoxFit.fitWidth,)
               ),
             ),
             Align(
